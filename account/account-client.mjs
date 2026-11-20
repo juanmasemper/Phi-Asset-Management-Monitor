@@ -9,6 +9,15 @@ const monitor = $("main");
 const status = $("#account-status");
 const form = $("#account-form");
 const signOut = $("#account-sign-out");
+const recover = $("#account-recover");
+
+const localization = {
+  ...esES,
+  signIn: { ...esES.signIn, start: { ...esES.signIn.start, subtitle: "Ingresá a P Asset Management", actionLink: "Creá una cuenta" } },
+  signUp: { ...esES.signUp, start: {
+    ...esES.signUp.start, subtitle: "Registrate en P Asset Management", subtitleCombined: "Registrate en P Asset Management",
+  } },
+};
 
 function showGreeting(user) {
   const hour = new Date().getHours();
@@ -55,7 +64,7 @@ async function startAccess() {
     document.head.append(script);
   });
   const clerk = new Clerk(publishableKey);
-  await clerk.load({ localization: esES, ui: { ClerkUI: window.__internal_ClerkUICtor } });
+  await clerk.load({ localization, ui: { ClerkUI: window.__internal_ClerkUICtor } });
   signOut.addEventListener("click", async () => {
     signOut.disabled = true;
     try { await clerk.signOut({ redirectUrl: "/" }); }
@@ -83,7 +92,72 @@ async function startAccess() {
     if (signup) clerk.mountSignUp(form, props);
     else clerk.mountSignIn(form, props);
     mounted = signup ? "signup" : "signin";
+    recover.hidden = signup;
   }
+
+  recover.addEventListener("click", () => {
+    if (mounted === "signin") clerk.unmountSignIn(form);
+    mounted = "recovery";
+    recover.hidden = true;
+    const recovery = $("#account-recovery");
+    const feedback = $("#recovery-status");
+    const next = $("#recovery-next");
+    const email = $("#recovery-email");
+    const code = $("#recovery-code");
+    const password = $("#recovery-password");
+    const stages = [
+      {
+        fields: [email], label: "Enviar código", run: () => clerk.client.signIn.create({
+          identifier: email.value.trim(), strategy: "reset_password_email_code",
+        }),
+      },
+      {
+        fields: [code, password], label: "Guardar contraseña", run: () => clerk.client.signIn.attemptFirstFactor({
+          strategy: "reset_password_email_code", code: code.value.trim(), password: password.value,
+        }),
+      },
+    ];
+    const notice = "Si el correo está registrado, vas a recibir un código para recuperar tu contraseña.";
+    let stage = 0;
+    function showStage() {
+      for (const input of [email, code, password]) {
+        const active = stages[stage].fields.includes(input);
+        input.hidden = input.disabled = !active;
+        input.required = active;
+        input.labels[0].hidden = !active;
+      }
+      next.textContent = stages[stage].label;
+      stages[stage].fields[0].focus();
+    }
+    recovery.hidden = false;
+    showStage();
+    recovery.addEventListener("submit", async event => {
+      event.preventDefault();
+      if (next.disabled) return;
+      next.disabled = true;
+      feedback.textContent = "";
+      try {
+        await stages[stage].run();
+        if (stage === 1) {
+          recovery.reset();
+          if (clerk.client.signIn.status === "complete" && clerk.client.signIn.createdSessionId) {
+            await clerk.setActive({ session: clerk.client.signIn.createdSessionId });
+          } else {
+            location.replace("/");
+          }
+          return;
+        }
+        stage++;
+        feedback.textContent = notice;
+        showStage();
+      } catch (error) {
+        feedback.textContent = stage === 0 ? notice
+          : (error.errors?.[0]?.longMessage || "Revisá el código y los requisitos de la contraseña.");
+      } finally {
+        next.disabled = false;
+      }
+    });
+  }, { once: true });
 
   async function renderAccess() {
     const user = clerk.user;

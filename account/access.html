@@ -6,5 +6,18 @@
   <div class="account-panel">
     <p id="account-status" role="status">Cargando acceso…</p>
     <div id="account-form"></div>
+    <button id="account-recover" class="recovery-link" type="button" hidden>¿Olvidaste tu contraseña?</button>
+    <form id="account-recovery" hidden>
+      <h2>Recuperar contraseña</h2>
+      <label for="recovery-email">Correo electrónico</label>
+      <input id="recovery-email" name="email" type="email" autocomplete="email">
+      <label for="recovery-code" hidden>Código que recibiste por correo</label>
+      <input id="recovery-code" name="code" inputmode="numeric" autocomplete="one-time-code" hidden>
+      <label for="recovery-password" hidden>Nueva contraseña</label>
+      <input id="recovery-password" type="password" name="password" autocomplete="new-password" hidden>
+      <p id="recovery-status" role="status"></p>
+      <button id="recovery-next" class="asset-btn" type="submit">Enviar código</button>
+      <a class="recovery-link" href="/">Volver a ingresar</a>
+    </form>
   </div>
 </section>

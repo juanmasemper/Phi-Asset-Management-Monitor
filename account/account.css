@@ -5,6 +5,14 @@
 #account-form{width:min(100%,420px)}
 #account-status{padding:0 8px;color:var(--muted);text-align:center}
 #account-status:empty,.account-panel:has(#account-form:empty) #account-form{display:none}
+.recovery-link{display:inline-block;padding:6px 0;border:0;background:none;color:var(--accent);font:inherit;text-decoration:underline}
+#account-recovery{width:min(100%,420px);display:grid;gap:8px}
+#account-recovery h2{font-size:1.35rem;margin:0 0 6px}
+#account-recovery label{font-weight:600;font-size:.9rem}
+#account-recovery input{width:100%;padding:9px;color:var(--text);border:1px solid var(--line);border-radius:8px;background:var(--soft)}
+#recovery-status{margin:4px 0;color:var(--muted);font-size:.9rem}
+#recovery-status:empty{display:none}
+#recovery-next{color:var(--selected-text);background:var(--selected)}
 #account-sign-out{height:44px;padding:0 10px;color:#fff4d5;background:#223855;border-color:#577292}
 [data-account-gate] #heading{overflow-wrap:anywhere}
 @media(max-width:750px){.account-screen{grid-template-columns:1fr;gap:0;margin:16px auto}.account-intro{padding:22px 18px}.account-panel{min-height:340px;padding:14px}}
