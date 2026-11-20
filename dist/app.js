@@ -12,7 +12,7 @@ const state = { sheets: [], index: 0, page: 0, chart: null };
 const pageSize = 25;
 const controls = ["#search", "#sort", "#sector", "#only"].map($);
 const markets = {
-  NASDAQ: "SKHY NVDA MU GOOGL AVGO SNDK AMD PLTR ASML META AAPL MSFT AMZN INTC QCOM TSLA LRCX MRVL CSCO COST CRWD RKLB TEM ASTS ONDS ETSY PEP SBUX MRNA BNTX TMUS ADBE AAL UAL COIN RIOT MSTR MARA ANT SPCX MELI FSLR HON",
+  NASDAQ: "SKHY NVDA MU GOOGL AVGO SNDK AMD PLTR ASML META AAPL MSFT AMZN INTC QCOM TSLA LRCX MRVL CSCO COST CRWD RKLB TEM ASTS ONDS ETSY PEP SBUX MRNA BNTX TMUS ADBE AAL UAL COIN RIOT MSTR MARA ANT SPCX MELI FSLR HON WMT",
   NYSE: "BE VST TSM CCJ ORCL DELL LLY V JPM CVX PG MRK GE NVS HSBC PM VALE SHEL STLA CAT RTX VZ NEE COP BBD BHP T UBER NVO MO FCX NU O CRM GS HD TGT KO DIS BBY NKE LMND BA GLW ETN XOM JNJ PFE AZN UNH ABT ABBV CVS NIO F GM TM HMC RACE PINS DAL FDX HPQ",
   AMEX: "SPY IWM EEM XLF XLE DIA EWZ ARKK SH GLD FXI IEUR IBB VEA IVE IVW XLC XLY XLB XLI XLK XLV XLP XLRE IJH EWJ SLV PSQ VIG URA SMH SPXL XLU CIBR SGOV BOXX SHV EWY COPX",
 };
@@ -256,7 +256,7 @@ function paintHero() {
   for (let i = -3; i <= 2; i++) grid(0, i, 10, i);
   const levels = [0.16, .23, .19, .32, .38, .31, .49, .58, .52, .64];
   for (let i = 0; i < levels.length; i++) {
-    const left = x(i,-.4), base = y(i,-.4), top = base - height * levels[i];
+    const left = x(i,-.4), base = y(i,-.4), top = base - height * levels[i] * .7;
     const w = width * .047, dx = width * .028, dy = height * .038;
     const light = levels[i] > (levels[i - 1] ?? 0);
     polygon([[left,base],[left+w,base-dy],[left+w,top-dy],[left,top]], light ? "#3a9f76" : "#397666");
