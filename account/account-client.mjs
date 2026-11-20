@@ -13,9 +13,9 @@ const recover = $("#account-recover");
 
 const localization = {
   ...esES,
-  signIn: { ...esES.signIn, start: { ...esES.signIn.start, subtitle: "Ingresá a P Asset Management", actionLink: "Creá una cuenta" } },
+  signIn: { ...esES.signIn, start: { ...esES.signIn.start, subtitle: "Ingresá a Phi Asset Management", actionLink: "Creá una cuenta" } },
   signUp: { ...esES.signUp, start: {
-    ...esES.signUp.start, subtitle: "Registrate en P Asset Management", subtitleCombined: "Registrate en P Asset Management",
+    ...esES.signUp.start, subtitle: "Registrate en Phi Asset Management", subtitleCombined: "Registrate en Phi Asset Management",
   } },
 };
 
