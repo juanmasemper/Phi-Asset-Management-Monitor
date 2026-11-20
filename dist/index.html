@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <meta name="description" content="Monitor de acciones, CEDEARs y ETF de Phi Asset Management.">
-  <title>Monitor Juanchi | Phi Asset Management</title>
+  <meta name="description" content="Monitor de acciones, CEDEARs y ETF de P Asset Management.">
+  <title>Monitor | P Asset Management</title>
   <link rel="icon" type="image/png" sizes="48x48" href="favicon.png">
   <link rel="stylesheet" href="style.css">
   <script type="module" src="app.js"></script>
@@ -17,15 +17,18 @@
           <source media="(prefers-reduced-motion: reduce)" srcset="brand.png">
           <img src="brand.gif" alt="" width="144" height="144">
         </picture>
-        <div>Phi <span>Asset Management</span></div>
+        <div>P <span>Asset Management</span></div>
       </div>
-      <button id="theme" class="theme" type="button" aria-label="Cambiar tema"><span aria-hidden="true">☾</span> Tema oscuro</button>
+      <div class="header-actions">
+        <button id="column-language" class="column-language" type="button" aria-label="Mostrar columnas y sectores en inglés" aria-pressed="false"><span lang="es">ES</span><span aria-hidden="true">/</span><span lang="en">EN</span></button>
+        <button id="theme" class="theme" type="button" aria-label="Activar tema oscuro" title="Activar tema oscuro"><span aria-hidden="true">☾</span></button>
+      </div>
     </div>
   </header>
   <main class="frame">
     <section class="hero" aria-labelledby="heading">
       <div class="hero-content">
-        <h1 id="heading">Monitor Juanchi</h1>
+        <h1 id="heading">P Asset Management</h1>
         <p>Acciones, CEDEARs y ETF</p>
         <section class="metrics" aria-label="Resumen de la planilla" id="metrics"></section>
       </div>
@@ -38,20 +41,23 @@
         <label><span class="sr-only">Sector o temática</span><select id="sector" aria-label="Sector o temática"></select></label>
         <label><span class="sr-only">Orden</span><select id="sort" aria-label="Orden"><option value="name">Compañía A–Z</option><option value="target">Mayor distancia al TARGET</option><option value="forward">Menor P/E futuro</option></select></label>
         <label class="valuation"><input id="only" type="checkbox"> Con datos de valuación</label>
-        <button id="column-language" class="column-language" type="button" aria-label="Mostrar columnas y sectores en inglés" aria-pressed="false"><span lang="es">ES</span><span aria-hidden="true">/</span><span lang="en">EN</span></button>
       </div>
       <div class="table-meta">
         <span id="status" role="status">Cargando datos…</span>
         <span id="quote-freshness" class="quote-freshness" role="status"></span>
       </div>
-      <div class="table-scroll" tabindex="0" aria-label="Tabla con desplazamiento horizontal">
+      <div class="mobile-table-tools">
+        <span id="mobile-table-hint">Deslizá para ver más columnas</span>
+        <button id="mobile-table-mode" class="asset-btn" type="button" aria-controls="table-scroll">Vista compacta</button>
+      </div>
+      <div id="table-scroll" class="table-scroll" tabindex="0" aria-label="Tabla con desplazamiento horizontal">
         <table id="table"><caption class="sr-only">Activos y columnas del Excel</caption><thead></thead><tbody></tbody></table>
       </div>
       <div id="empty" hidden>No hay activos para estos filtros.</div>
       <div id="data-error" hidden><button type="button" class="asset-btn" id="retry-data">Reintentar</button></div>
       <div class="pager"><button id="prev" type="button">Anterior</button><span id="page"></span><button id="next" type="button">Siguiente</button></div>
     </section>
-    <footer><span>Phi Asset Management</span><span>— Dato no disponible</span></footer>
+    <footer><span>P Asset Management</span><span>— Dato no disponible</span></footer>
   </main>
   <dialog id="asset" aria-labelledby="asset-title">
     <div class="dialog-head"><div><div id="asset-symbol" class="eyebrow"></div><h2 id="asset-title"></h2></div><button id="close" aria-label="Cerrar ficha" type="button">✕</button></div>

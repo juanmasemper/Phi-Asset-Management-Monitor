@@ -1,0 +1,11 @@
+.account-screen{display:grid;grid-template-columns:1fr minmax(310px,47%);gap:24px;align-items:center;margin:28px auto;background:var(--hero);border:1px solid var(--line);border-radius:22px;box-shadow:var(--shadow);overflow:hidden}
+.account-intro{padding:34px clamp(18px,5vw,62px);color:var(--hero-text)}
+.account-intro p{margin:0;color:var(--hero-muted)}
+.account-panel{min-height:430px;display:grid;align-content:center;justify-items:center;padding:24px;background:var(--card)}
+#account-form{width:min(100%,420px)}
+#account-status{padding:0 8px;color:var(--muted);text-align:center}
+#account-status:empty,.account-panel:has(#account-form:empty) #account-form{display:none}
+#account-sign-out{height:44px;padding:0 10px;color:#fff4d5;background:#223855;border-color:#577292}
+[data-account-gate] #heading{overflow-wrap:anywhere}
+@media(max-width:750px){.account-screen{grid-template-columns:1fr;gap:0;margin:16px auto}.account-intro{padding:22px 18px}.account-panel{min-height:340px;padding:14px}}
+@media(max-width:460px){.top-inner:has(#account-sign-out:not([hidden])) .brand div{display:none}}

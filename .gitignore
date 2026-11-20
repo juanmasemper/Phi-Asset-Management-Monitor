@@ -1,6 +1,8 @@
 __pycache__/
 .openai/
 .release/
+.release-account/
+node_modules/
 dist/data.json
 research.json
 *.xlsx

@@ -1,14 +1,14 @@
-# Monitor Juanchi
+# Monitor de P Asset Management
 
-Monitor de acciones, CEDEARs y ETF de Phi Asset Management.
+Monitor de acciones, CEDEARs y ETF.
 
 ## Abrir el monitor
 
-Entrá con tu cuenta de Vercel. Las tres tablas se cargan automáticamente. [Abrir Monitor Juanchi](https://phi-asset-management-monitor.vercel.app/)
+Creá una cuenta con tu correo o iniciá sesión. Las tres tablas se cargan al ingresar. [Abrir el monitor de P Asset Management](https://phi-monitor-acceso.vercel.app/)
 
 - Buscá por compañía o ticker y filtrá por sector.
 - Usá **ES / EN** para cambiar el idioma de las columnas y las categorías.
-- En el celular, tocá una compañía para ver su ficha con todas las columnas.
+- En el celular, deslizá la tabla para ver todas las columnas o elegí **Vista compacta**. Tocá una compañía para abrir su ficha.
 
 ## Trabajar en tu computadora
 
@@ -26,6 +26,8 @@ Abrí [el monitor local](http://localhost:8000).
 Ejecutá `python prepare-release.py` después de generar los datos. Publicá el contenido de `.release` en el proyecto protegido de Vercel. Ese paquete incluye las tres tablas.
 
 GitHub guarda el código. El Excel y el paquete con datos quedan en tu computadora y en el despliegue protegido. Vercel saltea las compilaciones desde GitHub si el HTML viene sin las tablas.
+
+Para publicar el sitio con cuentas, ejecutá `python prepare-account.py` y publicá `.release-account` en el proyecto Vercel vinculado a Clerk. La planilla queda en una función del servidor que verifica la sesión y el correo.
 
 ## Cotizaciones automáticas
 

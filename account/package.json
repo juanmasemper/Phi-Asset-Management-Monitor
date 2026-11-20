@@ -1,0 +1,16 @@
+{
+  "name": "phi-monitor-acceso",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "esbuild account-client.mjs --bundle --format=esm --minify --outfile=dist/account.js"
+  },
+  "dependencies": {
+    "@clerk/backend": "3.31.3",
+    "@clerk/clerk-js": "6.46.2",
+    "@clerk/localizations": "4.26.2"
+  },
+  "devDependencies": {
+    "esbuild": "0.28.2"
+  }
+}

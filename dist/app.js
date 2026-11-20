@@ -14,6 +14,7 @@ const state = { sheets: [], index: 0, page: 0, chart: null };
 const pageSize = 25;
 const controls = ["#search", "#sort", "#sector", "#only"].map($);
 const mobileColumns = { Cedears: ["A", "C", "D"], ETF: ["A", "D", "E"], "Base Cedears": ["A", "G", "I"] };
+const targetColumns = { N: "Diferencia al objetivo", O: "Potencial al objetivo (%)" };
 const markets = {
   NASDAQ: "SKHY NVDA MU GOOGL AVGO SNDK AMD PLTR ASML META AAPL MSFT AMZN INTC QCOM TSLA LRCX MRVL CSCO COST CRWD RKLB TEM ASTS ONDS ETSY PEP SBUX MRNA BNTX TMUS ADBE AAL UAL COIN RIOT MSTR MARA ANT SPCX MELI FSLR HON WMT QQQ IBIT ETHA",
   NYSE: "BE VST TSM CCJ ORCL DELL LLY V JPM CVX PG MRK GE NVS HSBC PM VALE SHEL STLA CAT RTX VZ NEE COP BBD BHP T UBER NVO MO FCX NU O CRM GS HD TGT KO DIS BBY NKE LMND BA GLW ETN XOM JNJ PFE AZN UNH ABT ABBV CVS NIO F GM TM HMC RACE PINS DAL FDX HPQ",
@@ -34,6 +35,8 @@ const columnNames = {
   "Forw P/E": ["P/E futuro", "Fwd P/E"],
   "Forward P/E": ["P/E proyectado", "Forward P/E"],
   "TARGET": ["Precio objetivo", "Price Target"],
+  "Diferencia al objetivo": ["Diferencia al objetivo", "Gap to Price Target"],
+  "Potencial al objetivo (%)": ["Potencial al objetivo (%)", "Implied Upside / Downside (%)"],
   "Market Cap": ["Capitalización bursátil", "Market Cap"],
   "Earning Date": ["Fecha de resultados", "Earnings Date"],
   "52 W Low": ["Mínimo de 52 semanas", "52-Week Low"],
@@ -134,7 +137,10 @@ function sectorColumn(table) { return table.name === "Cedears" ? "X" : table.nam
 function sectorKey(value) { return value ? sectorAliases.get(normalized(value)) ?? value : ""; }
 function sectorOf(row) { return sectorKey(row.v[sectorColumn(sheet())]); }
 function sectorLabel(key) { return englishColumns ? key : spanishSectors.get(key) ?? key; }
-function columnLabel(label) { return columnNames[label]?.[englishColumns ? 1 : 0] ?? label; }
+function columnLabel(table, key, label) {
+  const name = label || (table.name === "Cedears" ? targetColumns[key] : "");
+  return columnNames[name]?.[englishColumns ? 1 : 0] ?? name;
+}
 function unnamedColumn(key) { return englishColumns ? `Excel column ${key}` : `Columna ${key} del Excel`; }
 function normalized(text) { return String(text ?? "").normalize("NFD").replace(/\p{Diacritic}/gu, "").toLowerCase().trim(); }
 
@@ -151,10 +157,11 @@ function renderColumnControls(sector) {
   const head = node("tr");
   head.lang = select.lang;
   for (const [key, label] of sheet().columns) {
-    const cell = node("th", columnLabel(label));
+    const title = columnLabel(sheet(), key, label);
+    const cell = node("th", title);
     cell.scope = "col";
     if (!mobileColumns[sheet().name].includes(key)) cell.classList.add("wide-table-only");
-    if (!label) cell.setAttribute("aria-label", unnamedColumn(key));
+    if (!title) cell.setAttribute("aria-label", unnamedColumn(key));
     head.append(cell);
   }
   $("#table thead").replaceChildren(head);
@@ -322,7 +329,7 @@ function openAsset(row, table) {
   if (market) body.append(mount);
   const list = node("dl", undefined, "asset-data");
   for (const [key, label] of table.columns) {
-    const term = node("dt", label ? columnLabel(label) : unnamedColumn(key));
+    const term = node("dt", columnLabel(table, key, label) || unnamedColumn(key));
     term.lang = englishColumns ? "en" : "es";
     list.append(term, node("dd", displayed(row.v[key], key, table)));
   }
@@ -333,7 +340,7 @@ function openAsset(row, table) {
     details.append(node("summary", "Fuentes de los campos verificados"));
     const sourceList = node("ul");
     for (const [key, [label, url]] of sources) {
-      const li = node("li", (columnLabel(table.columns.find(col => col[0] === key)?.[1]) || key) + " · ");
+      const li = node("li", (columnLabel(table, key, table.columns.find(col => col[0] === key)?.[1]) || key) + " · ");
       li.append(url ? link(label, url) : document.createTextNode(label));
       sourceList.append(li);
     }
@@ -345,7 +352,12 @@ function openAsset(row, table) {
 
 function theme(value) {
   document.documentElement.dataset.theme = value;
-  $("#theme").textContent = value === "dark" ? "☀ Tema claro" : "☾ Tema oscuro";
+  const button = $("#theme");
+  const isDark = value === "dark";
+  const action = isDark ? "Activar tema claro" : "Activar tema oscuro";
+  button.firstElementChild.textContent = isDark ? "☀" : "☾";
+  button.setAttribute("aria-label", action);
+  button.title = action;
   if (state.chart) chart(state.chart.mount, state.chart.market, state.chart.symbol);
 }
 
@@ -462,6 +474,7 @@ function applyQuote(row, table, quote, feed) {
 
 let refreshing = false;
 let providerConfigured = true;
+let requestHeaders = async () => ({});
 async function refreshQuotes() {
   if (refreshing || !providerConfigured || document.hidden || !state.sheets.length) return;
   const entries = state.sheets.flatMap(table => table.rows.map(row => ({ table, row, symbol: quoteSymbol(row, table) })))
@@ -470,7 +483,10 @@ async function refreshQuotes() {
   if (!symbols.length) return;
   refreshing = true;
   try {
-    const response = await fetch(`./api/quotes?symbols=${encodeURIComponent(symbols.join(","))}`, { signal: AbortSignal.timeout(10000) });
+    const response = await fetch(`./api/quotes?symbols=${encodeURIComponent(symbols.join(","))}`, {
+      headers: await requestHeaders(),
+      signal: AbortSignal.timeout(10000),
+    });
     if (response.status === 503 || response.status === 404) { providerConfigured = false; return; }
     if (!response.ok) return;
     const { feed, quotes } = await response.json();
@@ -485,33 +501,53 @@ async function refreshQuotes() {
   }
 }
 
+async function loadEmbeddedData() {
+  const embedded = $("#monitor-data").textContent.trim();
+  if (embedded) return JSON.parse(embedded);
+  const response = await fetch("./data.json");
+  if (!response.ok) throw new Error("data unavailable");
+  return response.json();
+}
+
+let dataLoader = loadEmbeddedData;
 async function loadMonitor() {
   $("#data-error").hidden = true;
   $("#status").textContent = "Cargando datos…";
   for (const control of [...controls, $("#prev"), $("#next")]) control.disabled = true;
   try {
-    const embedded = $("#monitor-data").textContent.trim();
-    let tables;
-    if (embedded) {
-      tables = JSON.parse(embedded);
-    } else {
-      const response = await fetch("./data.json");
-      if (!response.ok) throw new Error("data unavailable");
-      tables = await response.json();
-    }
+    const tables = await dataLoader();
     if (!Array.isArray(tables) || tables.length !== 3 || tables.some(table =>
       !Array.isArray(table.columns) || !Array.isArray(table.rows) || table.rows.length === 0
     )) throw new Error("invalid data");
     for (const control of controls) control.disabled = false;
     initialize(tables);
     refreshQuotes();
+    return true;
   } catch {
     $("#status").textContent = "No se pudieron cargar los datos del monitor.";
     $("#data-error").hidden = false;
+    return false;
   }
 }
 
 $("#retry-data").addEventListener("click", loadMonitor);
+function setMobileTableView(compact) {
+  const viewport = $("#table-scroll");
+  viewport.dataset.view = compact ? "compact" : "full";
+  viewport.scrollLeft = 0;
+  $("#mobile-table-hint").hidden = compact;
+  $("#mobile-table-mode").textContent = compact ? "Ver todas las columnas" : "Vista compacta";
+}
+
+let compactTable = false;
+try { compactTable = localStorage.getItem("phi-mobile-table") === "compact"; } catch {}
+setMobileTableView(compactTable);
+$("#mobile-table-mode").addEventListener("click", () => {
+  compactTable = !compactTable;
+  setMobileTableView(compactTable);
+  try { localStorage.setItem("phi-mobile-table", compactTable ? "compact" : "full"); } catch {}
+});
+
 $("#column-language").addEventListener("click", () => {
   englishColumns = !englishColumns;
   try { localStorage.setItem("phi-column-language", englishColumns ? "en" : "es"); } catch {}
@@ -523,4 +559,11 @@ $("#column-language").addEventListener("click", () => {
 renderLanguageButton();
 window.setInterval(refreshQuotes, 60_000);
 document.addEventListener("visibilitychange", refreshQuotes);
-loadMonitor();
+
+export async function startAccountMonitor(loadData, headers) {
+  dataLoader = loadData;
+  requestHeaders = headers;
+  return loadMonitor();
+}
+
+if (!document.documentElement.hasAttribute("data-account-gate")) loadMonitor();
