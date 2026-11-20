@@ -19,12 +19,16 @@ if [table["name"] for table in tables] != ["Cedears", "ETF", "Base Cedears"] or 
     raise ValueError("The workbook snapshot must contain all three populated tables.")
 
 html = (source / "index.html").read_text(encoding="utf-8")
-sign_out = '<button id="account-sign-out" class="asset-btn" type="button" hidden>Cerrar sesión</button>'
+account_actions = (
+    '<button id="account-settings" class="asset-btn" type="button" aria-label="Configuración de cuenta" hidden>'
+    '<span aria-hidden="true">⚙</span><span class="settings-label">Configuración</span></button>\n        '
+    '<button id="account-sign-out" class="asset-btn" type="button" hidden>Cerrar sesión</button>'
+)
 replacements = {
     '<html lang="es-AR">': '<html lang="es-AR" data-account-gate>',
     '<script type="module" src="app.js"></script>': '<script type="module" src="account.js"></script>',
     '<main class="frame">': (account / "access.html").read_text(encoding="utf-8") + '<main class="frame" hidden>',
-    '<div class="header-actions">': '<div class="header-actions">\n        ' + sign_out,
+    '<div class="header-actions">': '<div class="header-actions">\n        ' + account_actions,
 }
 for marker, replacement in replacements.items():
     if html.count(marker) != 1:

@@ -11,6 +11,7 @@ const form = $("#account-form");
 const signOut = $("#account-sign-out");
 const recover = $("#account-recover");
 const continueLink = $("#account-continue");
+const settingsButton = $("#account-settings");
 const monitorPath = "/monitor";
 const monitorRequested = location.pathname.replace(/\/$/, "") === monitorPath;
 
@@ -22,10 +23,16 @@ const localization = {
   } },
 };
 
+function displayName(user) {
+  const customName = user.unsafeMetadata?.monitorDisplayName;
+  if (typeof customName === "string" && customName.trim()) return customName.trim();
+  return user.firstName || user.username || user.primaryEmailAddress?.emailAddress.split("@")[0] || "";
+}
+
 function showGreeting(user) {
   const hour = new Date().getHours();
   const greeting = hour >= 5 && hour < 12 ? "Buen día" : hour >= 12 && hour < 20 ? "Buenas tardes" : "Buenas noches";
-  const name = user.firstName || user.username || user.primaryEmailAddress?.emailAddress.split("@")[0];
+  const name = displayName(user);
   $("#heading").textContent = name ? `${greeting}, ${name}` : greeting;
 }
 
@@ -72,6 +79,45 @@ async function startAccess() {
   });
   const clerk = new Clerk(publishableKey);
   await clerk.load({ localization, ui: { ClerkUI: window.__internal_ClerkUICtor } });
+  const preferences = $("#account-preferences");
+  const nameInput = $("#display-name");
+  const preferencesStatus = $("#preferences-status");
+  const savePreferences = $("#save-preferences");
+  settingsButton.addEventListener("click", () => {
+    if (!clerk.user) return;
+    nameInput.value = displayName(clerk.user);
+    preferencesStatus.textContent = "";
+    preferences.showModal();
+    nameInput.focus();
+  });
+  $("#close-preferences").addEventListener("click", () => preferences.close());
+  $("#account-security").addEventListener("click", () => {
+    if (!clerk.user) return;
+    preferences.close();
+    clerk.openUserProfile({ appearance: appearance() });
+  });
+  $("#preferences-form").addEventListener("submit", async event => {
+    event.preventDefault();
+    const user = clerk.user;
+    const name = nameInput.value.trim();
+    if (!user || savePreferences.disabled) return;
+    if (!name || name.length > 60) {
+      preferencesStatus.textContent = "Ingresá un nombre de entre 1 y 60 caracteres.";
+      return;
+    }
+    savePreferences.disabled = true;
+    preferencesStatus.textContent = "";
+    try {
+      const updated = await user.updateMetadata({ unsafeMetadata: { monitorDisplayName: name } });
+      if (clerk.user?.id !== user.id) return;
+      showGreeting(updated);
+      preferencesStatus.textContent = "Nombre guardado.";
+    } catch {
+      preferencesStatus.textContent = "No se pudo guardar el nombre. Probá de nuevo.";
+    } finally {
+      savePreferences.disabled = false;
+    }
+  });
   signOut.addEventListener("click", async () => {
     signOut.disabled = true;
     try { await clerk.signOut({ redirectUrl: "/" }); }
@@ -176,7 +222,9 @@ async function startAccess() {
       return;
     }
     signOut.hidden = !user;
+    settingsButton.hidden = !user;
     if (!user) {
+      if (preferences.open) preferences.close();
       continueLink.hidden = true;
       status.textContent = "";
       mountForm();

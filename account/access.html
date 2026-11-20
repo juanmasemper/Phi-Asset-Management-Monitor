@@ -22,3 +22,17 @@
     </form>
   </div>
 </section>
+<dialog id="account-preferences" aria-labelledby="preferences-title">
+  <div class="dialog-head">
+    <h2 id="preferences-title">Configuración de cuenta</h2>
+    <button id="close-preferences" class="asset-btn" type="button" aria-label="Cerrar configuración">✕</button>
+  </div>
+  <form id="preferences-form">
+    <label for="display-name">Nombre visible</label>
+    <input id="display-name" name="display-name" type="text" maxlength="60" autocomplete="nickname" required>
+    <p class="muted">Así aparece tu nombre en el saludo del monitor.</p>
+    <button id="save-preferences" class="asset-btn" type="submit">Guardar nombre</button>
+    <p id="preferences-status" role="status"></p>
+  </form>
+  <button id="account-security" class="asset-btn" type="button">Correo, contraseña y seguridad</button>
+</dialog>

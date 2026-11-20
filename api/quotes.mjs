@@ -19,7 +19,10 @@ export async function GET(request) {
       headers: { "APCA-API-KEY-ID": key, "APCA-API-SECRET-KEY": secret },
       signal: AbortSignal.timeout(6500),
     });
-    if (!response.ok) return Response.json({ status: "provider_unavailable" }, { status: 502 });
+    if (!response.ok) {
+      console.warn("Market data request rejected", { feed, upstreamStatus: response.status });
+      return Response.json({ status: "provider_unavailable" }, { status: 502 });
+    }
     const snapshots = await response.json();
     const quotes = Object.fromEntries(symbols.flatMap(symbol => {
       const snapshot = snapshots[symbol];
@@ -33,6 +36,9 @@ export async function GET(request) {
         daily: bar && { open: bar.o, high: bar.h, low: bar.l, volume: bar.v, time: bar.t },
       }]];
     }));
+    const quoteCount = Object.keys(quotes).length;
+    const newest = Object.values(quotes).reduce((time, quote) => Math.max(time, Date.parse(quote.time)), 0);
+    console.info("Market data received", { feed, quoteCount, latestTrade: newest ? new Date(newest).toISOString() : null });
     return Response.json({ feed, quotes }, { headers: { "Cache-Control": "private, max-age=20" } });
   } catch {
     return Response.json({ status: "provider_unavailable" }, { status: 502 });

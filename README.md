@@ -8,6 +8,7 @@ Creá una cuenta con tu correo o iniciá sesión. Si ya tenés una sesión abier
 
 - Buscá por compañía o ticker y filtrá por sector.
 - Usá **ES / EN** para cambiar el idioma de las columnas y las categorías.
+- En **Configuración**, cambiá el nombre del saludo y gestioná los datos de tu cuenta.
 - En el celular, deslizá la tabla para ver todas las columnas o elegí **Vista compacta**. Tocá una compañía para abrir su ficha.
 
 ## Trabajar en tu computadora

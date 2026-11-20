@@ -14,7 +14,18 @@
 #recovery-status{margin:4px 0;color:var(--muted);font-size:.9rem}
 #recovery-status:empty{display:none}
 #recovery-next{color:var(--selected-text);background:var(--selected)}
-#account-sign-out{height:44px;padding:0 10px;color:#fff4d5;background:#223855;border-color:#577292}
+#account-sign-out,#account-settings{height:44px;padding:0 10px;color:#fff4d5;background:#223855;border-color:#577292}
+#account-settings{display:flex;align-items:center;justify-content:center;gap:6px;min-width:44px}
+#account-settings span[aria-hidden]{font-size:1.15rem}
+#account-preferences{max-width:min(460px,calc(100% - 26px))}
+#preferences-title{margin:6px 0 15px}
+#preferences-form{margin-top:8px;padding-bottom:14px;border-bottom:1px solid var(--line)}
+#preferences-form label{display:block;margin-bottom:6px;font-weight:700}
+#display-name{width:100%;padding:10px 12px;color:var(--text);background:var(--soft);border:1px solid var(--line);border-radius:8px;font:inherit}
+#preferences-form p{margin:8px 0;font-size:.9rem}
+#preferences-status:empty{display:none}
+#account-security{margin-top:14px}
 [data-account-gate] #heading{overflow-wrap:anywhere}
 @media(max-width:750px){.account-screen{grid-template-columns:1fr;gap:0;margin:16px auto}.account-intro{padding:22px 18px}.account-panel{min-height:340px;padding:14px}}
+@media(max-width:540px){#account-settings .settings-label{display:none}}
 @media(max-width:460px){.top-inner:has(#account-sign-out:not([hidden])) .brand div{display:none}}
