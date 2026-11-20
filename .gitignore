@@ -1,5 +1,6 @@
 __pycache__/
 .openai/
+.release/
 dist/data.json
 research.json
 *.xlsx

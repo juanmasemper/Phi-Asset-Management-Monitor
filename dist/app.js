@@ -250,7 +250,7 @@ function paintHero() {
     ctx.lineTo(x(c,d), y(c,d));
     ctx.stroke();
   };
-  ctx.strokeStyle = "#86d6ab45";
+  ctx.strokeStyle = "#aac0e44d";
   for (let i = 0; i <= 10; i++) grid(i, -3, i, 2);
   for (let i = -3; i <= 2; i++) grid(0, i, 10, i);
   const levels = [0.16, .23, .19, .32, .38, .31, .49, .58, .52, .64];
@@ -258,9 +258,9 @@ function paintHero() {
     const left = x(i,-.4), base = y(i,-.4), top = base - height * levels[i] * .7;
     const w = width * .047, dx = width * .028, dy = height * .038;
     const light = levels[i] > (levels[i - 1] ?? 0);
-    polygon([[left,base],[left+w,base-dy],[left+w,top-dy],[left,top]], light ? "#3a9f76" : "#397666");
-    polygon([[left+w,base-dy],[left+w+dx,base],[left+w+dx,top],[left+w,top-dy]], light ? "#21654d" : "#255349");
-    polygon([[left,top],[left+w,top-dy],[left+w+dx,top],[left+dx,top+dy]], light ? "#9becc0" : "#72a794");
+    polygon([[left,base],[left+w,base-dy],[left+w,top-dy],[left,top]], light ? "#d5b985" : "#7699cc");
+    polygon([[left+w,base-dy],[left+w+dx,base],[left+w+dx,top],[left+w,top-dy]], light ? "#96794f" : "#3f5f90");
+    polygon([[left,top],[left+w,top-dy],[left+w+dx,top],[left+dx,top+dy]], light ? "#fff0c6" : "#bed4f4");
   }
 }
 
@@ -300,24 +300,30 @@ function initialize(sheets) {
   selectSheet(0);
 }
 
-fetch("data.json").then(response => {
-  if (!response.ok) throw new Error("data unavailable");
-  return response.json();
-}).then(initialize).catch(() => {
-  $("#status").textContent = "Cargá los datos del monitor";
-  const upload = node("input");
-  upload.type = "file";
-  upload.accept = ".json,application/json";
-  upload.addEventListener("change", async () => {
-    if (!upload.files[0]) return;
-    try {
-      const tables = JSON.parse(await upload.files[0].text());
-      if (!Array.isArray(tables) || tables.length !== 3 || tables.some(table => !Array.isArray(table.rows) || !Array.isArray(table.columns))) throw new Error("invalid data");
-      initialize(tables);
-      $("#empty").replaceChildren(node("span", "No hay activos para estos filtros."));
-    } catch { $("#status").textContent = "El archivo no tiene el formato de datos del monitor"; }
-  });
-  upload.setAttribute("aria-label", "Seleccionar el archivo data.json");
-  $("#empty").replaceChildren(upload);
-  $("#empty").hidden = false;
-});
+async function loadMonitor() {
+  $("#data-error").hidden = true;
+  $("#status").textContent = "Cargando datos…";
+  for (const control of [...controls, $("#prev"), $("#next")]) control.disabled = true;
+  try {
+    const embedded = $("#monitor-data").textContent.trim();
+    let tables;
+    if (embedded) {
+      tables = JSON.parse(embedded);
+    } else {
+      const response = await fetch("./data.json");
+      if (!response.ok) throw new Error("data unavailable");
+      tables = await response.json();
+    }
+    if (!Array.isArray(tables) || tables.length !== 3 || tables.some(table =>
+      !Array.isArray(table.columns) || !Array.isArray(table.rows) || table.rows.length === 0
+    )) throw new Error("invalid data");
+    for (const control of controls) control.disabled = false;
+    initialize(tables);
+  } catch {
+    $("#status").textContent = "No se pudieron cargar los datos del monitor.";
+    $("#data-error").hidden = false;
+  }
+}
+
+$("#retry-data").addEventListener("click", loadMonitor);
+loadMonitor();

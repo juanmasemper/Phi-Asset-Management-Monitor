@@ -11,7 +11,11 @@ python read-workbook.py "C:/ruta/Monitor Juanchi.xlsx" .
 python -m http.server 8000 --directory dist
 ```
 
-Abrí [el monitor local](http://localhost:8000). La extracción genera `dist/data.json` sin modificar el Excel. El monitor también permite abrir un `data.json` local desde el navegador. Git excluye el Excel, los datos generados y el archivo local de investigación.
+Abrí [el monitor local](http://localhost:8000). La extracción genera `dist/data.json` sin modificar el Excel y la página lo carga automáticamente.
+
+## Despliegue
+
+Ejecutá `python prepare-release.py` para generar el paquete en `.release`. El paquete contiene el HTML con los datos de la planilla integrados y requiere un despliegue protegido. Git excluye el Excel, los datos generados, el paquete de despliegue y el archivo local de investigación.
 
 ## Cotizaciones y valuación
 
