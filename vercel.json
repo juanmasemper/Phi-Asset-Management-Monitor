@@ -1,4 +1,5 @@
 {
   "framework": null,
-  "outputDirectory": "dist"
+  "outputDirectory": "dist",
+  "ignoreCommand": "! grep -Fq 'id=\"monitor-data\">[' dist/index.html"
 }

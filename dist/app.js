@@ -7,12 +7,15 @@ const node = (tag, text, className) => {
 };
 const formatter = new Intl.NumberFormat("es-AR", { maximumFractionDigits: 2 });
 const percentage = new Intl.NumberFormat("es-AR", { style: "percent", maximumFractionDigits: 2, signDisplay: "exceptZero" });
+const localQuoteDate = new Intl.DateTimeFormat("es-AR", { dateStyle: "short", timeStyle: "short", timeZone: "America/Buenos_Aires" });
+const sessionDate = new Intl.DateTimeFormat("en-CA", { timeZone: "America/New_York" });
 const collator = new Intl.Collator("es-AR", { sensitivity: "base", numeric: true });
 const state = { sheets: [], index: 0, page: 0, chart: null };
 const pageSize = 25;
 const controls = ["#search", "#sort", "#sector", "#only"].map($);
+const mobileColumns = { Cedears: ["A", "C", "D"], ETF: ["A", "D", "E"], "Base Cedears": ["A", "G", "I"] };
 const markets = {
-  NASDAQ: "SKHY NVDA MU GOOGL AVGO SNDK AMD PLTR ASML META AAPL MSFT AMZN INTC QCOM TSLA LRCX MRVL CSCO COST CRWD RKLB TEM ASTS ONDS ETSY PEP SBUX MRNA BNTX TMUS ADBE AAL UAL COIN RIOT MSTR MARA ANT SPCX MELI FSLR HON WMT",
+  NASDAQ: "SKHY NVDA MU GOOGL AVGO SNDK AMD PLTR ASML META AAPL MSFT AMZN INTC QCOM TSLA LRCX MRVL CSCO COST CRWD RKLB TEM ASTS ONDS ETSY PEP SBUX MRNA BNTX TMUS ADBE AAL UAL COIN RIOT MSTR MARA ANT SPCX MELI FSLR HON WMT QQQ IBIT ETHA",
   NYSE: "BE VST TSM CCJ ORCL DELL LLY V JPM CVX PG MRK GE NVS HSBC PM VALE SHEL STLA CAT RTX VZ NEE COP BBD BHP T UBER NVO MO FCX NU O CRM GS HD TGT KO DIS BBY NKE LMND BA GLW ETN XOM JNJ PFE AZN UNH ABT ABBV CVS NIO F GM TM HMC RACE PINS DAL FDX HPQ",
   AMEX: "SPY IWM EEM XLF XLE DIA EWZ ARKK SH GLD FXI IEUR IBB VEA IVE IVW XLC XLY XLB XLI XLK XLV XLP XLRE IJH EWJ SLV PSQ VIG URA SMH SPXL XLU CIBR SGOV BOXX SHV EWY COPX",
 };
@@ -150,6 +153,7 @@ function renderColumnControls(sector) {
   for (const [key, label] of sheet().columns) {
     const cell = node("th", columnLabel(label));
     cell.scope = "col";
+    if (!mobileColumns[sheet().name].includes(key)) cell.classList.add("wide-table-only");
     if (!label) cell.setAttribute("aria-label", unnamedColumn(key));
     head.append(cell);
   }
@@ -205,8 +209,11 @@ function render() {
     for (const [key] of table.columns) {
       const value = row.v[key];
       const td = node("td", undefined, value == null ? "missing" : undefined);
+      if (!mobileColumns[table.name].includes(key)) td.classList.add("wide-table-only");
       if (key === "A") {
-        const button = node("button", nameOf(row), "row-open");
+        const button = node("button", undefined, "row-open");
+        button.append(node("span", nameOf(row), "company-name"));
+        if (tickerOf(row)) button.append(node("span", tickerOf(row), "mobile-ticker"));
         button.type = "button";
         button.addEventListener("click", () => openAsset(row, table));
         td.append(button);
@@ -216,7 +223,7 @@ function render() {
       } else {
         td.textContent = displayed(value, key, table);
         if (key === sectorColumn(table)) td.lang = englishColumns ? "en" : "es";
-        if (value == null) td.title = "Sin dato verificado";
+        if (value == null) td.title = "Dato no disponible";
         if (table.name === "Cedears" && ["D", "E", "O"].includes(key) && value) td.classList.add(value > 0 ? "positive" : "negative");
       }
       if (row.sources[key]) td.title = row.sources[key][0];
@@ -230,6 +237,10 @@ function render() {
   $("#page").textContent = `${state.page + 1} / ${total}`;
   $("#prev").disabled = state.page === 0;
   $("#next").disabled = state.page >= total - 1;
+  const refreshed = table.rows.reduce((latest, row) => Math.max(latest, row.quoteTime ?? 0), 0);
+  $("#quote-freshness").textContent = refreshed
+    ? `Última cotización EE. UU. · ${localQuoteDate.format(refreshed)} (ART)`
+    : table.quoteAsOf ? `Último corte verificado · ${table.quoteAsOf}` : "Fecha de corte sin confirmar";
 }
 
 function link(label, url) {
@@ -275,7 +286,10 @@ function openAsset(row, table) {
   $("#asset-title").textContent = name;
   $("#asset-symbol").textContent = symbol ?? "";
   const body = $("#asset-body");
-  const info = node("p", row.session ? `Cierre histórico consultado · ${row.session}. Otros campos provienen del Excel.` : "Valores de referencia del Excel.", "muted");
+  const info = node("p", row.quoteTime
+    ? `Cotización de EE. UU. · ${localQuoteDate.format(row.quoteTime)} (ART). La ficha indica la fuente de cada campo contrastado.`
+    : row.session ? `Cierre histórico contrastado · ${row.session}. La ficha indica la fuente de cada campo contrastado.`
+    : "Valores de la planilla. Las fuentes disponibles figuran debajo.", "muted");
   body.replaceChildren(info);
   if (row.note) body.append(node("p", row.note, "muted"));
   const values = valuation(row, table);
@@ -316,7 +330,7 @@ function openAsset(row, table) {
   const sources = Object.entries(row.sources);
   if (sources.length) {
     const details = node("details", undefined, "asset-sources");
-    details.append(node("summary", "Fuentes de datos completados"));
+    details.append(node("summary", "Fuentes de los campos verificados"));
     const sourceList = node("ul");
     for (const [key, [label, url]] of sources) {
       const li = node("li", (columnLabel(table.columns.find(col => col[0] === key)?.[1]) || key) + " · ");
@@ -409,6 +423,68 @@ function initialize(sheets) {
   selectSheet(0);
 }
 
+function quoteSymbol(row, table) {
+  const symbol = row.v[table.columns[1][0]];
+  const exchange = findMarket(row, table, symbol)?.split(":")[0];
+  return ["NASDAQ", "NYSE", "AMEX"].includes(exchange) ? symbol : null;
+}
+
+function applyQuote(row, table, quote, feed) {
+  const time = Date.parse(quote?.time);
+  if (!Number.isFinite(time) || !(quote.price > 0) || time <= (row.quoteTime ?? 0)) return false;
+  const tradeSession = sessionDate.format(time);
+  if (table.quoteAsOfIso && tradeSession <= table.quoteAsOfIso) return false;
+  const primary = table.name === "Cedears";
+  const fields = { [primary ? "C" : table.name === "ETF" ? "D" : "G"]: quote.price };
+  if (primary) {
+    const daily = quote.daily;
+    const barTime = Date.parse(daily?.time);
+    const sameSession = Number.isFinite(barTime) && tradeSession === sessionDate.format(barTime);
+    const previous = quote.previousClose;
+    const delta = sameSession && previous > 0 ? quote.price - previous : null;
+    Object.assign(fields, { D: delta === null ? null : delta / previous, E: delta, F: sameSession ? daily.open : null,
+      G: sameSession ? daily.high : null, H: sameSession ? daily.low : null,
+      I: previous > 0 ? previous : null, J: sameSession ? daily.volume : null });
+    const target = numeric(row.v.M);
+    if (target > 0 && !row.exclude) Object.assign(fields, { N: target - quote.price, O: target / quote.price - 1 });
+  }
+  const source = [`Alpaca · ${feed.toUpperCase()} · ${localQuoteDate.format(time)} ART`, "https://docs.alpaca.markets/us/docs/market-data-faq"];
+  for (const [key, value] of Object.entries(fields)) {
+    row.v[key] = value ?? null;
+    if (value == null) delete row.sources[key];
+    else if (key === "N" || key === "O") row.sources[key] = ["Cálculo con el precio objetivo y la última cotización", source[1]];
+    else if (primary && key === "I") row.sources[key] = [source[0] + " · cierre previo", source[1]];
+    else row.sources[key] = source;
+  }
+  row.quoteTime = time;
+  return true;
+}
+
+let refreshing = false;
+let providerConfigured = true;
+async function refreshQuotes() {
+  if (refreshing || !providerConfigured || document.hidden || !state.sheets.length) return;
+  const entries = state.sheets.flatMap(table => table.rows.map(row => ({ table, row, symbol: quoteSymbol(row, table) })))
+    .filter(entry => entry.symbol);
+  const symbols = [...new Set(entries.map(entry => entry.symbol))].sort();
+  if (!symbols.length) return;
+  refreshing = true;
+  try {
+    const response = await fetch(`./api/quotes?symbols=${encodeURIComponent(symbols.join(","))}`, { signal: AbortSignal.timeout(10000) });
+    if (response.status === 503 || response.status === 404) { providerConfigured = false; return; }
+    if (!response.ok) return;
+    const { feed, quotes } = await response.json();
+    if (!quotes || !["iex", "sip"].includes(feed)) return;
+    let changed = false;
+    for (const { row, table, symbol } of entries) changed = applyQuote(row, table, quotes[symbol], feed) || changed;
+    if (changed) render();
+  } catch {
+    // Keep the last received quote and timestamp if the provider is unreachable.
+  } finally {
+    refreshing = false;
+  }
+}
+
 async function loadMonitor() {
   $("#data-error").hidden = true;
   $("#status").textContent = "Cargando datos…";
@@ -428,6 +504,7 @@ async function loadMonitor() {
     )) throw new Error("invalid data");
     for (const control of controls) control.disabled = false;
     initialize(tables);
+    refreshQuotes();
   } catch {
     $("#status").textContent = "No se pudieron cargar los datos del monitor.";
     $("#data-error").hidden = false;
@@ -444,4 +521,6 @@ $("#column-language").addEventListener("click", () => {
   render();
 });
 renderLanguageButton();
+window.setInterval(refreshQuotes, 60_000);
+document.addEventListener("visibilitychange", refreshQuotes);
 loadMonitor();

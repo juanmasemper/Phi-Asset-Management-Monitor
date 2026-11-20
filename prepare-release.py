@@ -32,7 +32,10 @@ for marker, content in replacements.items():
     html = html.replace(marker, content, 1)
 
 (output / "index.html").write_text(html, encoding="utf-8")
-for asset in ("brand.gif", "brand.png"):
+for asset in ("brand.gif", "brand.png", "favicon.png"):
     copyfile(source / asset, output / asset)
+api = release / "api"
+api.mkdir(exist_ok=True)
+copyfile(root / "api" / "quotes.mjs", api / "quotes.mjs")
 copyfile(root / "vercel.json", release / "vercel.json")
 print(", ".join(f'{table["name"]} ({len(table["rows"])})' for table in tables))

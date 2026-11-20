@@ -102,15 +102,21 @@ def export(tables, directory):
                     item["exclude"] = True
                 if symbol == "WEGE3":
                     item["note"] = "La fila del Excel corresponde al CEDEAR en ARS."
+                if symbol == "BBD":
+                    item["note"] = "Las fuentes consultadas discrepan sobre el cierre de referencia. Se conserva el precio de la planilla."
                 verified = market["history"].get(symbol)
                 if symbol == "005930.KS":
                     item["note"] = "Acción ordinaria de Samsung Electronics en Corea. Precios expresados en KRW."
                     if verified:
-                        values.update(C=verified["close"], I=verified["close"], J=verified["volume"], D=0, E=0)
-                        for col in "CIJ":
-                            item["sources"][col] = ["Yahoo Finance · 19 nov 2026", verified["url"]]
+                        values.update(C=verified["close"], I=verified["close"], D=0, E=0)
+                if verified and verified.get("replaceClose"):
+                    values.update(C=verified["close"], I=verified["close"], D=0, E=0)
+                    item["note"] = "El cierre histórico de la planilla se corrigió con cotizaciones coincidentes de Yahoo Finance y Schwab."
                 if verified and isinstance(values["I"], (float, int)) and abs(values["I"] - verified["close"]) < .011:
                     reference = [f"{verified.get('provider', 'Yahoo Finance')} · 19 nov 2026", verified["url"]]
+                    for col in "CI":
+                        if values[col] == verified["close"]:
+                            item["sources"][col] = reference
                     for col, key in (("F", "open"), ("G", "high"), ("H", "low")):
                         if values[col] is None:
                             values[col] = verified[key]
@@ -121,6 +127,11 @@ def export(tables, directory):
                         values["D"] = values["E"] / previous
                         for col in "DE":
                             item["sources"][col] = reference
+                    elif values["D"] == 0 and values["E"] == 0:
+                        values.update(D=None, E=None)
+                    if "volume" in verified:
+                        values["J"] = verified["volume"]
+                        item["sources"]["J"] = reference
                     item["session"] = "19 nov 2026"
                 elif values["D"] == 0 and values["E"] == 0 and values["F"] is None:
                     values.update(D=None, E=None)
@@ -134,13 +145,25 @@ def export(tables, directory):
                 if symbol == "SKHY" and verified and verified.get("beta") and values["T"] is None:
                     values["T"] = verified["beta"]
                     item["sources"]["T"] = ["Yahoo Finance · Beta mensual de 5 años", verified["url"]]
+                for col, (value, label, url) in market.get("fundamentals", {}).get(symbol, {}).items():
+                    if values[col] is None:
+                        values[col] = value
+                        item["sources"][col] = [label, url]
+                if "M" in item["sources"] and isinstance(values["C"], (float, int)) and values["C"] > 0:
+                    values["N"] = round(values["M"] - values["C"], 2)
+                    values["O"] = values["M"] / values["C"] - 1
+                    for col in "NO":
+                        item["sources"][col] = ["Cálculo con el precio objetivo y el cierre de referencia", item["sources"]["M"][1]]
             if name == "ETF" and values["D"] is None and symbol in {"SGOV", "SHV", "BOXX", "IB01.L"} and market["history"].get(symbol):
                 verified = market["history"][symbol]
                 values["D"] = verified["close"]
                 item["session"] = "19 nov 2026"
                 item["sources"]["D"] = [f"{verified.get('provider', 'Yahoo Finance')} · 19 nov 2026", verified["url"]]
             listing.append(item)
-        sheets.append({"name": name, "columns": list(labels.items()), "rows": listing})
+        table = {"name": name, "columns": list(labels.items()), "rows": listing}
+        if any("session" in item for item in listing):
+            table.update(quoteAsOf="19 nov 2026", quoteAsOfIso="2026-11-19")
+        sheets.append(table)
     (directory / "dist" / "data.json").write_text(json.dumps(sheets, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
     for sheet in sheets:
         print(sheet["name"], len(sheet["rows"]), sum("session" in row for row in sheet["rows"]))
