@@ -14,7 +14,8 @@ export function privateJson(body, status = 200) {
 export async function sessionStatus(request, makeClient = createClerkClient) {
   const settings = accountSettings();
   if (!settings) return 503;
-  if (!request.headers.get("authorization")?.startsWith("Bearer ")) return 401;
+  if (new URL(request.url).origin !== settings.origin ||
+      !request.headers.get("authorization")?.startsWith("Bearer ")) return 401;
   try {
     const { publishableKey, secretKey, origin } = settings;
     const client = makeClient({ publishableKey, secretKey });
@@ -22,7 +23,10 @@ export async function sessionStatus(request, makeClient = createClerkClient) {
     const { userId } = state.toAuth() ?? {};
     if (!state.isAuthenticated || !userId) return 401;
     const user = await client.users.getUser(userId);
-    return user.emailAddresses.some(email => email.verification?.status === "verified") ? 200 : 403;
+    const verifiedEmail = user.emailAddresses.some(email =>
+      email.verification?.status === "verified" && !/\+clerk_test@/i.test(email.emailAddress)
+    );
+    return verifiedEmail ? 200 : 403;
   } catch {
     return 401;
   }

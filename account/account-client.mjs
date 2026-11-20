@@ -43,8 +43,19 @@ async function startAccess() {
   const response = await fetch("/api/account-config", { cache: "no-store" });
   if (!response.ok) throw new Error("Account settings unavailable");
   const { publishableKey } = await response.json();
+  const frontend = atob(publishableKey.split("_")[2]).replace(/\$$/, "");
+  if (!/^[a-z0-9](?:[a-z0-9.-]*[a-z0-9])?$/i.test(frontend)) throw new Error("Invalid authentication domain");
+  await new Promise((resolve, reject) => {
+    const script = document.createElement("script");
+    script.src = `https://${frontend}/npm/@clerk/ui@1/dist/ui.browser.js`;
+    script.async = true;
+    script.crossOrigin = "anonymous";
+    script.onload = resolve;
+    script.onerror = () => reject(new Error("Could not load Clerk forms"));
+    document.head.append(script);
+  });
   const clerk = new Clerk(publishableKey);
-  await clerk.load({ localization: esES });
+  await clerk.load({ localization: esES, ui: { ClerkUI: window.__internal_ClerkUICtor } });
   signOut.addEventListener("click", async () => {
     signOut.disabled = true;
     try { await clerk.signOut({ redirectUrl: "/" }); }
