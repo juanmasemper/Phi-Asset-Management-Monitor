@@ -11,7 +11,7 @@
 <body>
   <header class="top">
     <div class="frame top-inner">
-      <div class="brand"><span class="monogram" aria-hidden="true">Φ</span><div>Phi <span>Asset Management</span></div></div>
+      <div class="brand"><span class="monogram"><img src="brand.png" alt="" width="108" height="108"></span><div>Phi <span>Asset Management</span></div></div>
       <button id="theme" class="theme" type="button" aria-label="Cambiar tema"><span aria-hidden="true">☾</span> Tema oscuro</button>
     </div>
   </header>
@@ -30,13 +30,9 @@
       <div class="toolbar">
         <label class="search"><span class="sr-only">Buscar compañía o ticker</span><span aria-hidden="true">⌕</span><input id="search" type="search" placeholder="Buscar compañía o ticker"></label>
         <label><span class="sr-only">Sector o temática</span><select id="sector" aria-label="Sector o temática"></select></label>
-        <label><span class="sr-only">Orden</span><select id="sort" aria-label="Orden"><option value="name">Compañía A–Z</option><option value="target">Mayor distancia al TARGET</option><option value="forward">Menor P/E futuro</option><option value="priority">Orden original del Excel</option></select></label>
+        <label><span class="sr-only">Orden</span><select id="sort" aria-label="Orden"><option value="name">Compañía A–Z</option><option value="target">Mayor distancia al TARGET</option><option value="forward">Menor P/E futuro</option></select></label>
         <label class="valuation"><input id="only" type="checkbox"> Con datos de valuación</label>
       </div>
-      <details id="method">
-        <summary>Cómo interpretar la valuación</summary>
-        <p>La distancia al precio objetivo se calcula como (objetivo ÷ precio de la misma tabla − 1) × 100. El objetivo refleja una estimación y su fecha puede diferir de la del precio. Para P/E futuro se usan múltiplos positivos. Compará empresas del mismo sector y revisá los datos detrás de cada resultado antes de decidir.</p>
-      </details>
       <div class="table-meta"><span id="status" role="status">Cargando datos…</span><span>Referencia del Excel · — sin dato verificado</span></div>
       <div class="table-scroll" tabindex="0" aria-label="Tabla con desplazamiento horizontal">
         <table id="table"><caption class="sr-only">Activos y columnas del Excel</caption><thead></thead><tbody></tbody></table>

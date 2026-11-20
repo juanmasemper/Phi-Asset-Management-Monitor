@@ -86,7 +86,6 @@ function render() {
   );
   rows.sort((a, b) => {
     const byName = () => collator.compare(nameOf(a.row), nameOf(b.row)) || a.row.row - b.row.row;
-    if (sort === "priority") return a.row.row - b.row.row;
     if (sort === "target" && a.value.target !== b.value.target) return (b.value.target ?? -Infinity) - (a.value.target ?? -Infinity);
     if (sort === "forward" && a.value.forward !== b.value.forward) return (a.value.forward ?? Infinity) - (b.value.forward ?? Infinity);
     return byName();
