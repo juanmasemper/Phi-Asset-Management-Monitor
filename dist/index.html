@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="es-AR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="Monitor de acciones, CEDEARs y ETF de Phi Asset Management.">
+  <title>Monitor Juanchi | Phi Asset Management</title>
+  <link rel="stylesheet" href="style.css">
+  <script type="module" src="app.js"></script>
+</head>
+<body>
+  <header class="top">
+    <div class="frame top-inner">
+      <div class="brand"><span class="monogram" aria-hidden="true">Φ</span><div>Phi <span>Asset Management</span></div></div>
+      <button id="theme" class="theme" type="button" aria-label="Cambiar tema"><span aria-hidden="true">☾</span> Tema oscuro</button>
+    </div>
+  </header>
+  <main class="frame">
+    <section class="hero" aria-labelledby="heading">
+      <div class="hero-content">
+        <p class="eyebrow">MERCADOS &nbsp;/&nbsp; MONITOR DE ACTIVOS</p>
+        <h1 id="heading">Monitor Juanchi</h1>
+        <p>Explorá acciones, CEDEARs y ETF. Compará valuaciones y consultá cada instrumento en su mercado.</p>
+      </div>
+      <canvas id="hero-art" aria-hidden="true"></canvas>
+    </section>
+    <section class="metrics" aria-label="Resumen de la planilla" id="metrics"></section>
+    <section class="terminal" aria-label="Monitor de activos">
+      <nav id="sheets" class="sheet-tabs" aria-label="Tablas del Excel"></nav>
+      <div class="toolbar">
+        <label class="search"><span class="sr-only">Buscar compañía o ticker</span><span aria-hidden="true">⌕</span><input id="search" type="search" placeholder="Buscar compañía o ticker"></label>
+        <label><span class="sr-only">Sector o temática</span><select id="sector" aria-label="Sector o temática"></select></label>
+        <label><span class="sr-only">Orden</span><select id="sort" aria-label="Orden"><option value="name">Compañía A–Z</option><option value="target">Mayor distancia al TARGET</option><option value="forward">Menor P/E futuro</option><option value="priority">Orden original del Excel</option></select></label>
+        <label class="valuation"><input id="only" type="checkbox"> Con datos de valuación</label>
+      </div>
+      <details id="method">
+        <summary>Cómo interpretar la valuación</summary>
+        <p>La distancia al precio objetivo se calcula como (objetivo ÷ precio de la misma tabla − 1) × 100. El objetivo refleja una estimación y su fecha puede diferir de la del precio. Para P/E futuro se usan múltiplos positivos. Compará empresas del mismo sector y revisá los datos detrás de cada resultado antes de decidir.</p>
+      </details>
+      <div class="table-meta"><span id="status" role="status">Cargando datos…</span><span>Referencia del Excel · — sin dato verificado</span></div>
+      <div class="table-scroll" tabindex="0" aria-label="Tabla con desplazamiento horizontal">
+        <table id="table"><caption class="sr-only">Activos y columnas del Excel</caption><thead></thead><tbody></tbody></table>
+      </div>
+      <div id="empty" hidden>No hay activos para estos filtros.</div>
+      <div class="pager"><button id="prev" type="button">Anterior</button><span id="page"></span><button id="next" type="button">Siguiente</button></div>
+    </section>
+    <footer><span>Phi Asset Management</span><span>Las cotizaciones externas pueden tener demora según el mercado.</span></footer>
+  </main>
+  <dialog id="asset" aria-labelledby="asset-title">
+    <div class="dialog-head"><div><div id="asset-symbol" class="eyebrow"></div><h2 id="asset-title"></h2></div><button id="close" aria-label="Cerrar ficha" type="button">✕</button></div>
+    <div id="asset-body"></div>
+  </dialog>
+</body>
+</html>
