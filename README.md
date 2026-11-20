@@ -4,7 +4,7 @@ Monitor de acciones, CEDEARs y ETF.
 
 ## Abrir el monitor
 
-Creá una cuenta con tu correo o iniciá sesión. Las tres tablas se cargan al ingresar. [Abrir el monitor de Phi Asset Management](https://phi-monitor-acceso.vercel.app/)
+Creá una cuenta con tu correo o iniciá sesión. Si ya tenés una sesión abierta, elegí **Abrir monitor** en la pantalla de acceso. [Acceso a Phi Asset Management](https://phi-monitor-acceso.vercel.app/)
 
 - Buscá por compañía o ticker y filtrá por sector.
 - Usá **ES / EN** para cambiar el idioma de las columnas y las categorías.

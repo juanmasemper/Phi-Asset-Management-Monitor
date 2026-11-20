@@ -10,6 +10,9 @@ const status = $("#account-status");
 const form = $("#account-form");
 const signOut = $("#account-sign-out");
 const recover = $("#account-recover");
+const continueLink = $("#account-continue");
+const monitorPath = "/monitor";
+const monitorRequested = location.pathname.replace(/\/$/, "") === monitorPath;
 
 const localization = {
   ...esES,
@@ -86,7 +89,7 @@ async function startAccess() {
     const signup = new URLSearchParams(location.search).get("acceso") === "registro";
     const props = {
       routing: "hash", signInUrl: "/", signUpUrl: "/?acceso=registro",
-      forceRedirectUrl: "/", signInForceRedirectUrl: "/", signUpForceRedirectUrl: "/",
+      forceRedirectUrl: monitorPath, signInForceRedirectUrl: monitorPath, signUpForceRedirectUrl: monitorPath,
       appearance: appearance(),
     };
     if (signup) clerk.mountSignUp(form, props);
@@ -142,6 +145,7 @@ async function startAccess() {
           recovery.reset();
           if (clerk.client.signIn.status === "complete" && clerk.client.signIn.createdSessionId) {
             await clerk.setActive({ session: clerk.client.signIn.createdSessionId });
+            location.replace(monitorPath);
           } else {
             location.replace("/");
           }
@@ -163,14 +167,25 @@ async function startAccess() {
     const user = clerk.user;
     if (user && (admittedUser === user.id || checkingUser === user.id)) return;
     const pass = ++revision;
-    if (!user && admittedUser) {
+    if (!user && monitorRequested) {
       location.replace("/");
       return;
     }
     signOut.hidden = !user;
     if (!user) {
+      continueLink.hidden = true;
       status.textContent = "";
       mountForm();
+      return;
+    }
+    if (!monitorRequested) {
+      if (mounted === "signup") clerk.unmountSignUp(form);
+      if (mounted === "signin") clerk.unmountSignIn(form);
+      $("#account-recovery").hidden = true;
+      recover.hidden = true;
+      mounted = null;
+      status.textContent = "Ya iniciaste sesión.";
+      continueLink.hidden = false;
       return;
     }
     checkingUser = user.id;

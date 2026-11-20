@@ -483,7 +483,7 @@ async function refreshQuotes() {
   if (!symbols.length) return;
   refreshing = true;
   try {
-    const response = await fetch(`./api/quotes?symbols=${encodeURIComponent(symbols.join(","))}`, {
+    const response = await fetch(`/api/quotes?symbols=${encodeURIComponent(symbols.join(","))}`, {
       headers: await requestHeaders(),
       signal: AbortSignal.timeout(10000),
     });

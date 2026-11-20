@@ -19,7 +19,7 @@ if [table["name"] for table in tables] != ["Cedears", "ETF", "Base Cedears"] or 
     raise ValueError("The workbook snapshot must contain all three populated tables.")
 
 html = (source / "index.html").read_text(encoding="utf-8")
-sign_out = '<button id="account-sign-out" class="asset-btn" type="button" hidden>Salir</button>'
+sign_out = '<button id="account-sign-out" class="asset-btn" type="button" hidden>Cerrar sesión</button>'
 replacements = {
     '<html lang="es-AR">': '<html lang="es-AR" data-account-gate>',
     '<script type="module" src="app.js"></script>': '<script type="module" src="account.js"></script>',
@@ -46,7 +46,12 @@ copyfile(root / "api" / "quotes.mjs", release / "market-quotes.mjs")
     encoding="utf-8",
 )
 (release / "vercel.json").write_text(
-    json.dumps({"framework": None, "buildCommand": "npm run build", "outputDirectory": "dist"}),
+    json.dumps({
+        "framework": None,
+        "buildCommand": "npm run build",
+        "outputDirectory": "dist",
+        "rewrites": [{"source": "/monitor", "destination": "/index.html"}],
+    }),
     encoding="utf-8",
 )
 print(f"Prepared account shell and {sum(len(table['rows']) for table in tables)} protected rows.")
