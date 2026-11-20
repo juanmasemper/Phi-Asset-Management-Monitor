@@ -97,8 +97,6 @@ def export(tables, directory):
                     values["A"] = "Walgreens Boots Alliance"
                     item["note"] = "Dejó de cotizar tras su adquisición en agosto de 2025."
                     item["sources"]["A"] = ["Sycamore Partners", wba]
-                if values["A"] == "Stellantis NV":
-                    item["note"] = "El Excel usa STLA. Se identifica como Stellantis (NYSE:STLA). Tesla usa NASDAQ:TSLA."
                 if symbol == "ANT":
                     item["note"] = "El TARGET y Forw P/E del Excel coinciden con los de META. Se conservan para revisión y se excluyen de la comparación."
                     item["exclude"] = True
@@ -112,7 +110,7 @@ def export(tables, directory):
                         for col in "CIJ":
                             item["sources"][col] = ["Yahoo Finance · 19 nov 2026", verified["url"]]
                 if verified and isinstance(values["I"], (float, int)) and abs(values["I"] - verified["close"]) < .011:
-                    reference = ["Yahoo Finance · 19 nov 2026", verified["url"]]
+                    reference = [f"{verified.get('provider', 'Yahoo Finance')} · 19 nov 2026", verified["url"]]
                     for col, key in (("F", "open"), ("G", "high"), ("H", "low")):
                         if values[col] is None:
                             values[col] = verified[key]
@@ -126,20 +124,21 @@ def export(tables, directory):
                     item["session"] = "19 nov 2026"
                 elif values["D"] == 0 and values["E"] == 0 and values["F"] is None:
                     values.update(D=None, E=None)
-                if symbol == "MU" and values["Q"] is None and market.get("micron"):
-                    values["Q"] = "17 dic 2026"
-                    item["sources"]["Q"] = ["Micron Investor Relations", market["micron"]]
+                earnings = market.get("earnings", {}).get(symbol)
+                if values["Q"] is None and earnings:
+                    values["Q"], label, url = earnings
+                    item["sources"]["Q"] = [label, url]
                 if values["X"] is None and base.get(symbol, {}).get("E"):
                     values["X"] = base[symbol]["E"]
                     item["sources"]["X"] = ["Excel · pestaña Base Cedears", None]
                 if symbol == "SKHY" and verified and verified.get("beta") and values["T"] is None:
                     values["T"] = verified["beta"]
                     item["sources"]["T"] = ["Yahoo Finance · Beta mensual de 5 años", verified["url"]]
-            if name == "ETF" and values["D"] is None and symbol == "SGOV" and market["history"].get(symbol):
+            if name == "ETF" and values["D"] is None and symbol in {"SGOV", "SHV", "BOXX", "IB01.L"} and market["history"].get(symbol):
                 verified = market["history"][symbol]
                 values["D"] = verified["close"]
                 item["session"] = "19 nov 2026"
-                item["sources"]["D"] = ["Yahoo Finance · 19 nov 2026", verified["url"]]
+                item["sources"]["D"] = [f"{verified.get('provider', 'Yahoo Finance')} · 19 nov 2026", verified["url"]]
             listing.append(item)
         sheets.append({"name": name, "columns": list(labels.items()), "rows": listing})
     (directory / "dist" / "data.json").write_text(json.dumps(sheets, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
