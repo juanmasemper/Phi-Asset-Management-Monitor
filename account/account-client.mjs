@@ -54,7 +54,11 @@ function appearance() {
 async function startAccess() {
   const response = await fetch("/api/account-config", { cache: "no-store" });
   if (!response.ok) throw new Error("Account settings unavailable");
-  const { publishableKey } = await response.json();
+  const { publishableKey, accessUrl } = await response.json();
+  if (accessUrl) {
+    location.replace(accessUrl);
+    return;
+  }
   const frontend = atob(publishableKey.split("_")[2]).replace(/\$$/, "");
   if (!/^[a-z0-9](?:[a-z0-9.-]*[a-z0-9])?$/i.test(frontend)) throw new Error("Invalid authentication domain");
   await new Promise((resolve, reject) => {
