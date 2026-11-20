@@ -33,10 +33,11 @@
     <section class="terminal" aria-label="Monitor de activos">
       <nav id="sheets" class="sheet-tabs" aria-label="Tablas del Excel"></nav>
       <div class="toolbar">
-        <label class="search"><span class="sr-only">Buscar compañía o ticker</span><span aria-hidden="true">⌕</span><input id="search" type="search" placeholder="Buscar compañía o ticker"></label>
+        <label class="search"><span class="sr-only">Buscar compañía o ticker</span><span aria-hidden="true">⌕</span><input id="search" type="search" autocomplete="off" spellcheck="false" placeholder="Buscar compañía o ticker"></label>
         <label><span class="sr-only">Sector o temática</span><select id="sector" aria-label="Sector o temática"></select></label>
         <label><span class="sr-only">Orden</span><select id="sort" aria-label="Orden"><option value="name">Compañía A–Z</option><option value="target">Mayor distancia al TARGET</option><option value="forward">Menor P/E futuro</option></select></label>
         <label class="valuation"><input id="only" type="checkbox"> Con datos de valuación</label>
+        <button id="column-language" class="column-language" type="button" aria-label="Mostrar columnas y sectores en inglés" aria-pressed="false"><span lang="es">ES</span><span aria-hidden="true">/</span><span lang="en">EN</span></button>
       </div>
       <div class="table-meta"><span id="status" role="status">Cargando datos…</span><span>Referencia del Excel · — sin dato verificado</span></div>
       <div class="table-scroll" tabindex="0" aria-label="Tabla con desplazamiento horizontal">

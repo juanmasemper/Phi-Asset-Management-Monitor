@@ -17,6 +17,89 @@ const markets = {
   AMEX: "SPY IWM EEM XLF XLE DIA EWZ ARKK SH GLD FXI IEUR IBB VEA IVE IVW XLC XLY XLB XLI XLK XLV XLP XLRE IJH EWJ SLV PSQ VIG URA SMH SPXL XLU CIBR SGOV BOXX SHV EWY COPX",
 };
 
+const columnNames = {
+  "Acciones": ["Acciones", "Stocks"],
+  "Compañía": ["Compañía", "Company"],
+  "Precio": ["Precio", "Price"],
+  "Variación %": ["Variación %", "Change %"],
+  "Variación": ["Variación", "Change"],
+  "Open": ["Apertura", "Open"],
+  "High": ["Máximo", "High"],
+  "Low": ["Mínimo", "Low"],
+  "Close": ["Cierre", "Close"],
+  "Volumen": ["Volumen", "Volume"],
+  "Forw P/E": ["P/E futuro", "Fwd P/E"],
+  "Forward P/E": ["P/E proyectado", "Forward P/E"],
+  "TARGET": ["Precio objetivo", "Price Target"],
+  "Market Cap": ["Capitalización bursátil", "Market Cap"],
+  "Earning Date": ["Fecha de resultados", "Earnings Date"],
+  "52 W Low": ["Mínimo de 52 semanas", "52-Week Low"],
+  "52 W High": ["Máximo de 52 semanas", "52-Week High"],
+  "EPS": ["Ganancia por acción", "EPS"],
+  "Temática": ["Temática", "Theme"],
+  "Precio Original USD": ["Precio original en USD", "Underlying Price (USD)"],
+  "Precio Cedear Arg": ["Precio del CEDEAR en ARS", "CEDEAR Price (ARS)"],
+  "País": ["País", "Country"],
+  "Conversión CCL": ["Conversión CCL", "CCL Conversion"],
+  "Volumen Promedio (30 días)": ["Volumen promedio (30 días)", "Average Volume (30 Days)"],
+  "Beta (Daily 6M)": ["Beta diaria (6 meses)", "Beta (Daily, 6 Months)"],
+  "Volatilidad (30 D %)": ["Volatilidad (30 días, %)", "Volatility (30 Days, %)"],
+  "1 M Return": ["Rendimiento a 1 mes", "1-Month Return"],
+  "YTD": ["Rendimiento en el año", "YTD Return"],
+  "1Y Retun": ["Rendimiento a 1 año", "1-Year Return"],
+  "P/E (Fwd 12 M)": ["P/E futuro (12 meses)", "Forward P/E (12 Months)"],
+  "Rating (+)": ["Recomendación (+)", "Rating (+)"],
+  "Target Price USD": ["Precio objetivo en USD", "Price Target (USD)"],
+  "Ratio Convertibilidad": ["Ratio de conversión", "Conversion Ratio"],
+};
+
+const sectorGroups = [
+  ["Technology", "Tecnología", "Sector Tecnología"],
+  ["Industrials", "Industriales", "Industrial", "Sector Industrial"],
+  ["Basic Materials", "Materiales básicos", "Sector Materiales"],
+  ["Consumer Cyclicals", "Consumo discrecional", "Sector C. Discrecional"],
+  ["Consumer Non-Cyclicals", "Consumo básico", "Sector C. Básico"],
+  ["Energy", "Energía"],
+  ["Financials", "Finanzas"],
+  ["Healthcare", "Salud", "Sector Salud"],
+  ["Utilities", "Servicios públicos"],
+  ["Semiconductors", "Semiconductores", "Semicondutores"],
+  ["E-commerce", "Comercio electrónico"],
+  ["Cryptocurrencies", "Criptomonedas"],
+  ["Treasury Bonds 0–3 Months · Distributing", "Bonos del Tesoro 0–3 meses · Distribución", "Treasury Bond 0-3 MONTH Distrib"],
+  ["Treasury Bonds 0–3 Months · Accumulating", "Bonos del Tesoro 0–3 meses · Acumulación", "Treasury Bond 0-3 MONTH Reinvest"],
+  ["Treasury Bonds 0–1 Year · Distributing", "Bonos del Tesoro 0–1 año · Distribución", "Treasury Bond 0-1 YEAR Distrib"],
+  ["Treasury Bonds 0–1 Year · Accumulating", "Bonos del Tesoro 0–1 año · Acumulación", "Treasury Bond 0-1 YEAR Reinvest"],
+  ["U.S. Market", "Mercado de EE. UU.", "Mercado EE.UU"],
+  ["Small Caps", "Pequeña capitalización"],
+  ["Emerging Markets", "Mercados emergentes", "Mercado Emergentes"],
+  ["Brazil", "Brasil"],
+  ["Innovation & Technology", "Innovación y tecnología", "Innovación & Tecnología"],
+  ["Inverse S&P 500", "S&P 500 inverso", "S&P 500 - Inverso"],
+  ["Gold", "Oro", "Commodity - Oro"],
+  ["China", "China"],
+  ["European Corporates", "Corporativo europeo", "Corporativo Europa"],
+  ["Biotechnology", "Biotecnología"],
+  ["Developed Markets ex-U.S.", "Mercados desarrollados sin EE. UU.", "Merc. Desarrollados, ex US"],
+  ["S&P 500 Value", "S&P 500 de valor", "S&P Value"],
+  ["S&P 500 Growth", "S&P 500 de crecimiento", "S&P Growth"],
+  ["Communication Services", "Servicios de comunicación", "Sector Comunicación"],
+  ["Real Estate", "Bienes raíces", "Sector Real State"],
+  ["S&P MidCap 400", "Índice S&P MidCap 400", "Indice S&P MidCap 400"],
+  ["MSCI Japan", "Índice MSCI Japón", "Indice MSCI Japon"],
+  ["Silver", "Plata", "Commodity - Plata"],
+  ["Inverse Nasdaq 100", "Nasdaq 100 inverso", "Nasdaq 100 - Inverso"],
+  ["Dividends", "Dividendos"],
+  ["Uranium", "Uranio", "Commodity - Uranio"],
+  ["S&P 500", "S&P 500"],
+  ["Cybersecurity", "Ciberseguridad"],
+];
+
+const sectorAliases = new Map(sectorGroups.flatMap(group => group.map(alias => [normalized(alias), group[0]])));
+const spanishSectors = new Map(sectorGroups.map(([english, spanish]) => [english, spanish]));
+let englishColumns = false;
+try { englishColumns = localStorage.getItem("phi-column-language") === "en"; } catch {}
+
 function numeric(value) {
   if (typeof value === "number") return Number.isFinite(value) ? value : null;
   if (typeof value !== "string" || !/^-?\d+(?:[.,]\d+)*$/.test(value)) return null;
@@ -35,6 +118,7 @@ function valuation(row, sheet) {
 
 function displayed(value, key, sheet) {
   if (value === null || value === undefined) return "—";
+  if (key === sectorColumn(sheet)) return sectorLabel(sectorKey(value));
   if (typeof value !== "number") return value;
   if (sheet.name === "Cedears" && (key === "D" || key === "O")) return percentage.format(value);
   return formatter.format(value);
@@ -43,15 +127,44 @@ function displayed(value, key, sheet) {
 function sheet() { return state.sheets[state.index]; }
 function nameOf(row) { return row.v.A ?? row.v[sheet().columns[1][0]]; }
 function tickerOf(row) { return row.v[sheet().columns[1][0]]; }
-function sectorOf(row) { return row.v[sheet().name === "Cedears" ? "X" : sheet().name === "ETF" ? "C" : "E"]; }
-function normalized(text) { return String(text ?? "").normalize("NFD").replace(/\p{Diacritic}/gu, "").toLowerCase(); }
+function sectorColumn(table) { return table.name === "Cedears" ? "X" : table.name === "ETF" ? "C" : "E"; }
+function sectorKey(value) { return value ? sectorAliases.get(normalized(value)) ?? value : ""; }
+function sectorOf(row) { return sectorKey(row.v[sectorColumn(sheet())]); }
+function sectorLabel(key) { return englishColumns ? key : spanishSectors.get(key) ?? key; }
+function columnLabel(label) { return columnNames[label]?.[englishColumns ? 1 : 0] ?? label; }
+function unnamedColumn(key) { return englishColumns ? `Excel column ${key}` : `Columna ${key} del Excel`; }
+function normalized(text) { return String(text ?? "").normalize("NFD").replace(/\p{Diacritic}/gu, "").toLowerCase().trim(); }
+
+function renderColumnControls(sector) {
+  const select = $("#sector");
+  select.lang = englishColumns ? "en" : "es";
+  select.setAttribute("aria-label", englishColumns ? "Sector or theme" : "Sector o temática");
+  select.replaceChildren(new Option(englishColumns ? "All sectors" : "Todos los sectores", ""));
+  const sectors = [...new Set(sheet().rows.map(sectorOf).filter(Boolean))];
+  sectors.sort((a, b) => sectorLabel(a).localeCompare(sectorLabel(b), select.lang));
+  for (const key of sectors) select.add(new Option(sectorLabel(key), key));
+  select.value = sector;
+
+  const head = node("tr");
+  head.lang = select.lang;
+  for (const [key, label] of sheet().columns) {
+    const cell = node("th", columnLabel(label));
+    cell.scope = "col";
+    if (!label) cell.setAttribute("aria-label", unnamedColumn(key));
+    head.append(cell);
+  }
+  $("#table thead").replaceChildren(head);
+}
+
+function renderLanguageButton() {
+  const button = $("#column-language");
+  button.setAttribute("aria-pressed", String(englishColumns));
+  button.setAttribute("aria-label", englishColumns ? "Mostrar columnas y sectores en castellano" : "Mostrar columnas y sectores en inglés");
+}
 
 function selectSheet(index) {
   state.index = index;
   state.page = 0;
-  $("#sector").replaceChildren(new Option("Todos los sectores", ""));
-  const sectors = [...new Set(sheet().rows.map(sectorOf).filter(Boolean))].sort(collator.compare);
-  for (const sector of sectors) $("#sector").add(new Option(sector, sector));
   const isFund = sheet().name === "ETF";
   for (const option of $("#sort").options) {
     if (["target", "forward"].includes(option.value)) option.disabled = isFund;
@@ -60,14 +173,7 @@ function selectSheet(index) {
   $(".valuation").hidden = isFund;
   if (isFund) $("#only").checked = false;
   for (const [i, button] of [...$("#sheets").children].entries()) button.setAttribute("aria-current", String(i === index));
-  const head = node("tr");
-  for (const [key, label] of sheet().columns) {
-    const cell = node("th", label);
-    cell.scope = "col";
-    if (!label) cell.setAttribute("aria-label", key === "N" ? "Columna N del Excel" : "Columna O del Excel");
-    head.append(cell);
-  }
-  $("#table thead").replaceChildren(head);
+  renderColumnControls("");
   $(".table-scroll").scrollTo(0, 0);
   render();
 }
@@ -109,6 +215,7 @@ function render() {
         if (sort === "forward" && score.forward !== null) td.append(node("small", formatter.format(score.forward) + "× P/E futuro", "muted"));
       } else {
         td.textContent = displayed(value, key, table);
+        if (key === sectorColumn(table)) td.lang = englishColumns ? "en" : "es";
         if (value == null) td.title = "Sin dato verificado";
         if (table.name === "Cedears" && ["D", "E", "O"].includes(key) && value) td.classList.add(value > 0 ? "positive" : "negative");
       }
@@ -201,7 +308,9 @@ function openAsset(row, table) {
   if (market) body.append(mount);
   const list = node("dl", undefined, "asset-data");
   for (const [key, label] of table.columns) {
-    list.append(node("dt", label || `Columna ${key} del Excel`), node("dd", displayed(row.v[key], key, table)));
+    const term = node("dt", label ? columnLabel(label) : unnamedColumn(key));
+    term.lang = englishColumns ? "en" : "es";
+    list.append(term, node("dd", displayed(row.v[key], key, table)));
   }
   body.append(list);
   const sources = Object.entries(row.sources);
@@ -210,7 +319,7 @@ function openAsset(row, table) {
     details.append(node("summary", "Fuentes de datos completados"));
     const sourceList = node("ul");
     for (const [key, [label, url]] of sources) {
-      const li = node("li", (table.columns.find(col => col[0] === key)?.[1] || key) + " · ");
+      const li = node("li", (columnLabel(table.columns.find(col => col[0] === key)?.[1]) || key) + " · ");
       li.append(url ? link(label, url) : document.createTextNode(label));
       sourceList.append(li);
     }
@@ -326,4 +435,13 @@ async function loadMonitor() {
 }
 
 $("#retry-data").addEventListener("click", loadMonitor);
+$("#column-language").addEventListener("click", () => {
+  englishColumns = !englishColumns;
+  try { localStorage.setItem("phi-column-language", englishColumns ? "en" : "es"); } catch {}
+  renderLanguageButton();
+  if (!sheet()) return;
+  renderColumnControls($("#sector").value);
+  render();
+});
+renderLanguageButton();
 loadMonitor();
